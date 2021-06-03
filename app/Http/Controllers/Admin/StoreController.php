@@ -9,11 +9,16 @@ use App\Http\Requests\StoreRequest;
 
 class StoreController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('user.has.store')->only(['create', 'store']);
+    }
+
     public function index()
     {
-        $stores = Store::paginate(10);
+        $store = auth()->user()->store;
 
-        return view('admin.stores.index', compact('stores'));
+        return view('admin.stores.index', compact('store'));
     }
 
     public function create()
@@ -25,14 +30,10 @@ class StoreController extends Controller
 
     public function store(StoreRequest $request)
     {
-        $data = $request->all();
-
         $user = auth()->user();
-
-        $user->store()->create($data);
+        $user->store()->create($request->all());
 
         flash('Loja criada com sucesso!')->success();
-
         return redirect()->route('admin.stores.index');
     }
 
@@ -45,10 +46,8 @@ class StoreController extends Controller
 
     public function update(StoreRequest $request, $store)
     {
-
-        $data = $request->all();
         $store = Store::find($store);
-        $store->update($data);
+        $store->update($request->all());
 
         flash('Loja atualizada com sucesso!')->success();
         return redirect()->route('admin.stores.index');
